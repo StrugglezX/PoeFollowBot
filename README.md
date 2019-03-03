@@ -3,7 +3,8 @@
 You'll want to install:
 
 tesseract-ocr (windows has an installer)
-pip install whatever breaks
+
+and pip install whatever breaks
 
 
 Run it on a VM for safety of banning your main account
