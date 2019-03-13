@@ -8,7 +8,7 @@ import os
 import time
 
     
-workspace_base='C:\\Users\\milbu\\Desktop\\PoeNeuron'
+workspace_base='C:\\Users\\milbu\\Desktop\\PoeFollowBot'
 templates_base=os.path.join(workspace_base, 'templates')
 ally_template=cv2.imread(os.path.join(templates_base, 'AllyX.png'), 1)
 blue_ally_template=cv2.imread(os.path.join(templates_base, 'BlueAllyX.png'), 1)
@@ -26,11 +26,9 @@ def take_screenshot():
     img = Image.frombytes('RGB', sct_img.size, sct_img.rgb)
     img = np.array(img)
     img = convert_rgb_to_bgr(img)
+    #img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     return img
-
-def get_image(path):
-    return cv2.imread(path, 1)
 
 def convert_rgb_to_bgr(img):
     return img[:, :, ::-1]
@@ -45,7 +43,7 @@ def match_template_to_position(img_grayscale, template, threshold=0.7):
     return position
 
 def load_example_file():
-    return cv2.imread("C:\\Users\\milbu\\Desktop\\PoeNeuron\\templates\\Examples.png", 1)
+    return cv2.imread("C:\\Users\\milbu\\Desktop\\PoeNeuron\\templates\\Examples.png", 0 )
     
 def find_template_position(template, screenshot):
     pos = match_template_to_position(screenshot, template)
@@ -61,9 +59,9 @@ def PoeNeuronFollowPlayerThread(data):
         #screenshot = load_example_file()
         data._player_location = find_template_position(player_template, screenshot)
         if data._text_command == "follow":
-            data._move_location_command = find_template_position(ally_template, screenshot)
+            data._move_location_command = find_template_position(blue_ally_template, screenshot)
             if data._move_location_command == None:
-                data._move_location_command = find_template_position(blue_ally_template, screenshot)
+                data._move_location_command = find_template_position(ally_template, screenshot)
         elif data._text_command == "portal":
             data._move_location_command = find_template_position(portal_template, screenshot)
         elif data._text_command == "door":
