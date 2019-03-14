@@ -24,10 +24,11 @@ def command_list():
                 'door', # enter door
             ]
        
-def get_command_from_text(full_text):
+def get_command_from_text(full_text, data):
     for command in command_list():
         if command.upper() in full_text.upper():
             return command
+    return data._text_command
             
 def display_image(frame):
     imgplot = plt.imshow(frame)
@@ -36,6 +37,7 @@ def display_image(frame):
 def PoeNeuronTextThread(data):
     while True:
         image = take_screenshot()
+        display_image(image)
         full_text = find_text_on_image(image)
-        data._text_command = get_command_from_text(full_text)
+        data._text_command = get_command_from_text(full_text, data)
         time.sleep(5)

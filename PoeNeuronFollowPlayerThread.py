@@ -54,7 +54,6 @@ def find_portal_position():
     
 def PoeNeuronFollowPlayerThread(data):
     while True:
-        data._text_command='follow'
         screenshot = take_screenshot()
         #screenshot = load_example_file()
         data._player_location = find_template_position(player_template, screenshot)
