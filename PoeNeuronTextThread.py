@@ -25,6 +25,7 @@ def command_list():
             ]
        
 def get_command_from_text(full_text, data):
+    print(full_text.upper())
     for command in command_list():
         if command.upper() in full_text.upper():
             return command
