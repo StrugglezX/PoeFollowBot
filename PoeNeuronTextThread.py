@@ -37,7 +37,7 @@ def display_image(frame):
 def PoeNeuronTextThread(data):
     while True:
         image = take_screenshot()
-        display_image(image)
+        #display_image(image)
         full_text = find_text_on_image(image)
         data._text_command = get_command_from_text(full_text, data)
         time.sleep(5)
