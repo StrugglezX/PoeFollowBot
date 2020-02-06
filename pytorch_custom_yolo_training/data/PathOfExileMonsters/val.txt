@@ -1,0 +1,11 @@
+./data/PathOfExileMonsters/images/zomebie1280.jpg
+./data/PathOfExileMonsters/images/zomebie2200.jpg
+./data/PathOfExileMonsters/images/zomebie2560.jpg
+./data/PathOfExileMonsters/images/zomebie2920.jpg
+./data/PathOfExileMonsters/images/zomebie3360.jpg
+./data/PathOfExileMonsters/images/zomebie3880.jpg
+./data/PathOfExileMonsters/images/zomebie4200.jpg
+./data/PathOfExileMonsters/images/zomebie4560.jpg
+./data/PathOfExileMonsters/images/zomebie4920.jpg
+./data/PathOfExileMonsters/images/zomebie5280.jpg
+./data/PathOfExileMonsters/images/zomebie760.jpg
