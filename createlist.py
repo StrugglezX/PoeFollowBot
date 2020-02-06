@@ -3,7 +3,7 @@ import os
 import numpy as np
 import sys
 
-current_dir = "./data/PathOfExileMonsters/images"
+current_dir = "./data/PathOfExileMonsters/images/0"
 split_pct = 10;
 file_train = open("data/PathOfExileMonsters/train.txt", "w")  
 file_val = open("data/PathOfExileMonsters/val.txt", "w")  

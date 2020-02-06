@@ -1,6 +1,6 @@
 import os, sys, time, datetime, random
-
 from PIL import Image
+import numpy as np
 import cv2
 
 # load weights and set defaults
@@ -25,9 +25,6 @@ while(True):
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     pilimg = Image.fromarray(frame)
     pilimg = make_square(pilimg)
-    detections = detect_image(pilimg)
-
-    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
     img = np.array(pilimg)
 
     im = Image.fromarray(img)
@@ -36,7 +33,7 @@ while(True):
     #Hacks for making square inputs from the video
     if objnum % 40 == 0:
         
-        image_name = 'forboxing/zomebie{}.jpg'.format(objnum)
+        image_name = 'data/PathOfExileMonsters/images/zomebie{}.jpg'.format(objnum)
         im.save(image_name, 'JPEG')
     objnum = objnum + 1
     

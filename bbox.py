@@ -10,7 +10,7 @@ import random
 # colors for the bboxes
 COLORS = ['red', 'blue', 'yellow', 'pink', 'cyan', 'green', 'black']
 # image sizes for the examples
-SIZE = 250, 250
+SIZE = 800, 800
 
 class LabelTool():
     def __init__(self, master):
@@ -94,16 +94,6 @@ class LabelTool():
         self.goBtn = Button(self.ctrPanel, text = 'Go', command = self.gotoImage)
         self.goBtn.pack(side = LEFT)
 
-        # example pannel for illustration
-        self.egPanel = Frame(self.frame, border = 10)
-        self.egPanel.grid(row = 1, column = 0, rowspan = 5, sticky = N)
-        self.tmpLabel2 = Label(self.egPanel, text = "Examples:")
-        self.tmpLabel2.pack(side = TOP, pady = 5)
-        self.egLabels = []
-        for i in range(3):
-            self.egLabels.append(Label(self.egPanel))
-            self.egLabels[-1].pack(side = TOP)
-
         # display mouse position
         self.disp = Label(self.ctrPanel, text='')
         self.disp.pack(side = RIGHT)
@@ -117,7 +107,7 @@ class LabelTool():
 
     def loadDir(self, dbg = False):
 
-        self.imageDir = os.path.join('forboxing', str(self.imgclass))
+        self.imageDir = os.path.join('data', 'PathOfExileMonsters', 'images', str(self.imgclass))
         print(self.imageDir)
         self.imageList = glob.glob(os.path.join(self.imageDir, '*.jpg'))
         self.imageList = sorted(self.imageList)
@@ -130,7 +120,7 @@ class LabelTool():
         self.total = len(self.imageList)
 
          # set up output dir
-        self.outDir = os.path.join('newlabels', str(self.imgclass))
+        self.outDir = os.path.join('data', 'PathOfExileMonsters', 'labels', str(self.imgclass))
         if not os.path.exists(self.outDir):
             os.mkdir(self.outDir)
 
@@ -147,7 +137,6 @@ class LabelTool():
             new_size = int(r * im.size[0]), int(r * im.size[1])
             self.tmp.append(im.resize(new_size, Image.ANTIALIAS))
             self.egList.append(ImageTk.PhotoImage(self.tmp[-1]))
-            self.egLabels[i].config(image = self.egList[-1], width = SIZE[0], height = SIZE[1])
 
         self.loadImage()
         print ('%d images loaded' %(self.total))
@@ -192,6 +181,7 @@ class LabelTool():
     def saveImage(self):
         print('self.bboxIdList')
         print(self.bboxIdList)
+        f = open(self.labelfilename, 'w')
         for i in range(0, len(self.bboxIdList)):
             print('i is {}'.format(i))
             box = self.bboxList[i]
@@ -203,10 +193,7 @@ class LabelTool():
             h = (box[3] - box[1]) / imgh
             print("%f %f %f %f %f %f" % (box[0], box[1], box[2], box[3], imgw, imgh))
             print("%d %f %f %f %f" % (self.imgclass, x, y, w, h))
-            print("")
-            with open(self.labelfilename, 'w') as f:
-                f.write("%d %f %f %f %f" % (self.imgclass, x, y, w, h))
-            #print ('Image No. %d saved' %(self.cur))
+            f.write("%d %f %f %f %f\n" % (self.imgclass, x, y, w, h))
 
     def mouseClick(self, event):
         if self.STATE['click'] == 0:
