@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 import scipy.misc
+import PoeNeuronScreenshotThread
 
 from PIL import Image
 
@@ -54,16 +55,11 @@ def detect_image(img):
         detections = model(input_img)
         detections = utils.non_max_suppression(detections, 1, conf_thres, nms_thres)
     return detections[0]
-    
-def take_screenshot():
-    #image = ImageGrab.grab(bbox=(0, 0, 800, 600))
-    image = ImageGrab.grab()
-    return image
-    
+        
 def PoeNeuronAttackThread(data):
     while True:
+        image = PoeNeuronScreenshotThread.get_next_screenshot()        
         
-        image = take_screenshot()
         image = image.resize((800,800))
         img = np.array(image)
         detections = detect_image(image)
