@@ -3,24 +3,36 @@ import sys
 sys.path.append(os.getcwd())
 import threading
 import PoeNeuronData
-import PoeNeuronTextThread
-import PoeNeuronFollowPlayerThread
+#import PoeNeuronTextThread
+#import PoeNeuronFollowPlayerThread
 import PoeNeuronMovementThread
+import PoeNeuronAttackThread
 import tkinter
 
 if __name__ == "__main__":
     data = PoeNeuronData.PoeNeuronData()
+    """
     text_thread = threading.Thread(target=PoeNeuronTextThread.PoeNeuronTextThread, args=(data,))
     text_thread.setDaemon(True)
     text_thread.start()
+    """
     
+    
+    """
     follow_player_thread = threading.Thread(target=PoeNeuronFollowPlayerThread.PoeNeuronFollowPlayerThread, args=(data,))
     follow_player_thread.setDaemon(True)
     follow_player_thread.start()
+    """
     
     movement_thread = threading.Thread(target=PoeNeuronMovementThread.PoeNeuronMovementThread, args=(data,))
     movement_thread.setDaemon(True)
     movement_thread.start()
+    
+    attack_thread = threading.Thread(target=PoeNeuronAttackThread.PoeNeuronAttackThread, args=(data,))
+    attack_thread.setDaemon(True)
+    attack_thread.start()
+    
+    
     
        
     

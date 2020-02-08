@@ -66,7 +66,7 @@ def PoeNeuronMovementThread(data):
         potion_toggle_counter = potion_toggle_counter + 1
         if potion_toggle_counter == 10:
             potion_toggle_counter = 0
-            use_potion()
+            #use_potion()
             
         if data._text_command in valid_move_commands() and data._player_location and data._move_location_command:
             change_in_x = data._move_location_command[0]-data._player_location[0]
