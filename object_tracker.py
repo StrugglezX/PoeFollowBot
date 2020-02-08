@@ -13,7 +13,7 @@ from PIL import Image
 # load weights and set defaults
 config_path='config/yolov3.cfg'
 #weights_path='config/yolov3.weights'
-weights_path='79.weights'
+weights_path='config/49.weights'
 class_path='config/coco.names'
 img_size=800
 conf_thres=0.8
@@ -30,9 +30,7 @@ Tensor = torch.cuda.FloatTensor
 
 def detect_image(img):
     # scale and pad image
-    print('size {}x{}'.format(img.size[0], img.size[1]))
     ratio = min(img_size/img.size[0], img_size/img.size[1])
-    print('ratio {}'.format(ratio))
     imw = round(img.size[0] * ratio)
     imh = round(img.size[1] * ratio)
     img_transforms = transforms.Compose([ transforms.Resize((imh, imw)),
@@ -49,14 +47,7 @@ def detect_image(img):
         detections = model(input_img)
         detections = utils.non_max_suppression(detections, 1, conf_thres, nms_thres)
     return detections[0]
-    
-def make_square(im, min_size=800, fill_color=(0, 0, 0, 0)):
-    x, y = im.size
-    size = max(min_size, x, y)
-    new_im = Image.new('RGB', (size, size), fill_color)
-    new_im.paste(im, (int((size - x) / 2), int((size - y) / 2)))
-    return new_im
-    
+        
 videopath = './poevidlowres.mp4'
 
 import cv2
@@ -85,24 +76,14 @@ while(True):
         break
     frames += 1
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    frame = cv2.resize(frame, (800, 800), interpolation = cv2.INTER_AREA)
     pilimg = Image.fromarray(frame)
-    pilimg = make_square(pilimg)
     detections = detect_image(pilimg)
 
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+    frame = cv2.resize(frame, (800, 800), interpolation = cv2.INTER_AREA)
+    
     img = np.array(pilimg)
-
-    im = Image.fromarray(img)
-    im = make_square(im)
-    """
-    #Hacks for making square inputs from the video
-    if objnum % 40 == 0:
-        
-        image_name = 'forboxing/zomebie{}.jpg'.format(objnum)
-        im.save(image_name, 'JPEG')
-    objnum = objnum + 1
-    continue
-    """
     
     pad_x = max(img.shape[0] - img.shape[1], 0) * (img_size / max(img.shape))
     pad_y = max(img.shape[1] - img.shape[0], 0) * (img_size / max(img.shape))
@@ -119,10 +100,9 @@ while(True):
             y1 = int(((y1 - pad_y // 2) / unpad_h) * img.shape[0])
             x1 = int(((x1 - pad_x // 2) / unpad_w) * img.shape[1])
             color = colors[int(obj_id) % len(colors)]
-            print(int(cls_pred))
             cls = classes[int(cls_pred)]
             cv2.rectangle(frame, (x1, y1), (x1+box_w, y1+box_h), color, 4)
-            cv2.rectangle(frame, (x1, y1-35), (x1+len(cls)*19+80, y1), color, -1)
+            cv2.rectangle(frame, (x1, y1-35), (x1+len(cls)*19+1, y1), color, -1)
             cv2.putText(frame, cls + "-" + str(int(obj_id)), (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 3)
 
     cv2.imshow('Stream', frame)
