@@ -13,6 +13,7 @@ from torchvision import datasets, transforms
 from torch.autograd import Variable
 import scipy.misc
 import PoeNeuronScreenshotThread
+from time import sleep
 
 from PIL import Image
 
@@ -63,8 +64,12 @@ def PoeNeuronObjectDetectionThread(data):
         return
         
     while True:
-        image = PoeNeuronScreenshotThread.get_next_screenshot()        
+        sleep(0.3)
         
+        image = PoeNeuronScreenshotThread.get_next_screenshot(data)
+        
+        print('clearing')
+        data._detected_objects = {}
         image = image.resize((800,800))
         img = np.array(image)
         detections = detect_image(image)
@@ -83,6 +88,11 @@ def PoeNeuronObjectDetectionThread(data):
                 box_w_half = int(((x2 - x1) / unpad_w) * img.shape[1]) / 2
                 y1 = int(((y1 - pad_y // 2) / unpad_h) * img.shape[0])
                 x1 = int(((x1 - pad_x // 2) / unpad_w) * img.shape[1])
-                print('object at {}x{}'.format(x1 + box_w_half, y1 + box_h_half))
+                cls = classes[int(cls_pred)]
+                print('{} at {}x{}'.format(cls, x1 + box_w_half, y1 + box_h_half))
+                
+                if cls not in data._detected_objects:
+                    data._detected_objects[cls] = []
+                data._detected_objects[cls].append( (x1 + box_w_half, y1 + box_h_half) )
         else:
             print('no detections')

@@ -4,20 +4,13 @@ import math
 from pynput.mouse import Button, Controller as MouseController
 from pynput import keyboard
 import pynput
+import time
+import random
+from time import sleep
+import copy
 
 mouse = MouseController()
-keyboardController = keyboard.Controller()
 
-def valid_move_commands():
-    return [
-            'stop',
-            'follow',
-            'portal',
-            'door',
-            ]
-            
-deadzone = 100
-movement_space = deadzone * 2
 
 def move_mouse(x, y):
     def set_mouse_position(x, y):
@@ -41,41 +34,66 @@ def move_mouse(x, y):
 
 def left_mouse_click():
     mouse.click(Button.left)
-potion_idx = 0;
     
-def potions():
+def right_mouse_click():
+    mouse.click(Button.right)
+    
+def get_monster_list():
     return [
-        keyboard.KeyCode.from_char('1'), 
-        keyboard.KeyCode.from_char('2'), 
-        keyboard.KeyCode.from_char('3'), 
-        keyboard.KeyCode.from_char('4'), 
-        keyboard.KeyCode.from_char('5'),
+            'ZOMBIES',
         ]
-def use_potion():
-    global potion_idx
-    potion_idx = potion_idx + 1
-    if potion_idx > len(potions()) - 1:
-        potion_idx = 0
-    keyboardController.press(potions()[potion_idx])
-    keyboardController.release(potions()[potion_idx])
+        
+def get_closest_monster(data):
+    coodinate = None
+    detected_objects = copy.deepcopy(data._detected_objects)
     
-potion_toggle_counter = 0;
+    print('keys {}'.format(detected_objects.keys()))
+    for key in detected_objects.keys():
+        if key not in get_monster_list():
+            print('{} not monster'.format(key))
+            continue
+        print('detected_objects[key] {}'.format(detected_objects[key]))
+        
+        object_coordinates = detected_objects[key]
+        for object_coordinate in object_coordinates:
+            #deadzone check
+            return object_coordinate
+    
+    return coodinate
+    
+def get_closest_lootable(data):
+    return None
+    
+def get_current_time_ms():
+    return int(round(time.time() * 1000))
+    
+def is_cooldown_over(last_time, total_cooldown_time):
+    current_time = get_current_time_ms()
+    time_elapsed = current_time - last_time
+    print( 'time_elapsed {} total_cooldown_time {} '.format(time_elapsed, total_cooldown_time) )
+    return time_elapsed > total_cooldown_time
+    
 def PoeNeuronMovementThread(data):
+
+    last_attack_time = 0
+    total_attack_cooldown = 3000 #ms
+    
     while True:
-        global potion_toggle_counter
-        potion_toggle_counter = potion_toggle_counter + 1
-        if potion_toggle_counter == 10:
-            potion_toggle_counter = 0
-            #use_potion()
-            
-        if data._text_command in valid_move_commands() and data._player_location and data._move_location_command:
-            change_in_x = data._move_location_command[0]-data._player_location[0]
-            change_in_y = data._move_location_command[1]-data._player_location[1]
-            move_angle_radians = math.atan2(change_in_y, change_in_x)
-            mouse_delta_x = math.cos(move_angle_radians) * movement_space
-            mouse_delta_y = math.sin(move_angle_radians) * movement_space
-            mouse_pos = (data._player_location[0] + mouse_delta_x, data._player_location[1] + mouse_delta_y)
-            move_mouse(mouse_pos[0], mouse_pos[1])
-            left_mouse_click()
-            
-        time.sleep(0.2)
+        sleep( random.uniform(0.2, 0.5) )
+        
+        
+        ## ATTACK
+        coordinate = get_closest_monster( data )
+        print('is_cooldown_over(last_attack_time, total_attack_cooldown) {} and coordinate != None {}'.format(is_cooldown_over(last_attack_time, total_attack_cooldown), coordinate != None))
+        if is_cooldown_over(last_attack_time, total_attack_cooldown) and coordinate != None:
+            move_mouse( coordinate[0], coordinate[1] );
+            right_mouse_click()
+            last_attack_time = get_current_time_ms()
+            continue
+        
+        ## LOOT
+        
+        
+        ## MOVE
+        
+        

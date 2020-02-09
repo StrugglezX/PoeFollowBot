@@ -12,11 +12,15 @@ def PoeNeuronScreenshotThread(data):
         
 thread_last_screenshot_dict = {}
 
-def get_next_screenshot():
+def get_next_screenshot(data):
     tid = threading.get_ident()
-    last_id = thread_last_screenshot_dict[tid]
+    if tid not in thread_last_screenshot_dict:
+        thread_last_screenshot_dict[tid] = 0
     
-    while threads_last_screenshot_count < data._screenshot_number:
+    threads_last_screenshot_count = thread_last_screenshot_dict[tid]
+    
+    while threads_last_screenshot_count > data._screenshot_number or data._screenshot == None:
+        print('threads_last_screenshot_count {} < data._screenshot_number {} or data._screenshot == None {}'.format(threads_last_screenshot_count, data._screenshot_number, data._screenshot == None))
         sleep(data._screenshot_sleep_interval)
         
-    return (data._screenshot, data._screenshot_number)
+    return data._screenshot

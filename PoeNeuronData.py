@@ -9,3 +9,4 @@ class PoeNeuronData():
         self._screenshot_number = 0
         self._frames_per_second = 10
         self._screenshot_sleep_interval = 1.0 / self._frames_per_second
+        self._detected_objects = {}
