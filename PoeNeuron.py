@@ -19,12 +19,14 @@ def hook_keyboard(data):
 
 
     def on_press(key):
-        print('{0} pressed'.format(key))
+        pass
 
     def on_release(key):
-        print('{0} release'.format(key))
-        if key.char == 'a' or key == Key.esc:
-            data._escape = True
+        try:
+            if key.char == 'a' or key == Key.esc:
+                data._escape = True
+        except:
+            return
 
     # Collect events until released
     with Listener(

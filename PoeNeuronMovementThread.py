@@ -1,4 +1,5 @@
 
+import copy
 import time
 import math
 from pynput.mouse import Button, Controller as MouseController
@@ -52,16 +53,15 @@ def get_closest_monster(data):
         if key not in get_monster_list():
             continue
         
-        object_coordinates = detected_objects[key]
-        for object_coordinate in list(object_coordinates):
-            #deadzone check
+        object_coordinates = copy.deepcopy(detected_objects[key])
+        for obj_id in object_coordinates.keys():
+            object_coordinate = object_coordinates[obj_id]
+            if object_coordinate == None:
+                continue
             staleness = get_current_time_ms() - object_coordinate._time
-            if staleness < 3000:                
+            if staleness < 2000:                
                 print( 'Attacking {} at {}x{}'.format(key, object_coordinate._x, object_coordinate._y ) )
                 return (object_coordinate._x, object_coordinate._y)
-            else:
-                print('removing stale {} at {}x{}'.format(key, object_coordinate._x, object_coordinate._y ) )
-                object_coordinates.remove(object_coordinate)
     
     return coodinate
     
@@ -85,10 +85,9 @@ def PoeNeuronMovementThread(data):
         sleep_time = random.random() * 0.5
         sleep( sleep_time )
         
-        print('checksleep {}'.format( data._escape ) )
         if data._escape:
             print('sleeping for 10s')
-            sleep(10000)
+            sleep(10)
             data._escape = False
             print('done sleeping for 10s')
         

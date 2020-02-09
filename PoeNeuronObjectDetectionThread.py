@@ -5,6 +5,7 @@ from models import *
 from utils import *
 import cv2
 from sort import *
+import copy
 
 import os, sys, time, datetime, random
 import torch
@@ -69,12 +70,15 @@ def PoeNeuronObjectDetectionThread(data):
         return
         
     while True:
-        sleep(0.3)
         
+        print('checking')
         image = PoeNeuronScreenshotThread.get_next_screenshot(data)
+        print('scanning')
         image = image.resize((800,800))
         img = np.array(image)
+        print('1: {}'.format(get_current_time_ms()))
         detections = detect_image(image)
+        print('2: {}'.format(get_current_time_ms()))
         
         
         pad_x = max(img.shape[0] - img.shape[1], 0) * (img_size / max(img.shape))
@@ -90,8 +94,33 @@ def PoeNeuronObjectDetectionThread(data):
                 y1 = int(((y1 - pad_y // 2) / unpad_h) * img.shape[0])
                 x1 = int(((x1 - pad_x // 2) / unpad_w) * img.shape[1])
                 cls = classes[int(cls_pred)]
-                
+                print('detected {} at {}x{}'.format(cls, x1, y1))
                 if cls not in data._detected_objects:
-                    data._detected_objects[cls] = []
+                    data._detected_objects[cls] = {}
                 new_obj = ObjectDetection(x1 + box_w_half, y1 + box_h_half, get_current_time_ms())
-                data._detected_objects[cls].append( new_obj )
+                data._detected_objects[cls][obj_id] = new_obj 
+                
+        """
+        copy_dets = copy.deepcopy(data._detected_objects)
+        for cls in copy_dets:
+            for obj_id in copy_dets[cls]:
+                object_coordinate = copy_dets[cls][obj_id]
+                if object_coordinate == None:
+                    continue
+                detected_time = object_coordinate._time
+                if get_current_time_ms() - detected_time > 3000:
+                    data._detected_objects[cls][obj_id] = None
+        """
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
