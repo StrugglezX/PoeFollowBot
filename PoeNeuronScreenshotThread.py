@@ -11,9 +11,12 @@ def PoeNeuronScreenshotThread(data):
         sleep(data._screenshot_sleep_interval)
         
 thread_last_screenshot_dict = {}
+
 def get_next_screenshot():
     tid = threading.get_ident()
-    if threads_last_screenshot_count:
-        while threads_last_screenshot_count < data._screenshot_number:
-            sleep(data._screenshot_sleep_interval)
+    last_id = thread_last_screenshot_dict[tid]
+    
+    while threads_last_screenshot_count < data._screenshot_number:
+        sleep(data._screenshot_sleep_interval)
+        
     return (data._screenshot, data._screenshot_number)

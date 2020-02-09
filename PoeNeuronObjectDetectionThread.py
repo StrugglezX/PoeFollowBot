@@ -26,10 +26,12 @@ conf_thres=0.8
 nms_thres=0.4
 
 # load model and put into eval mode
-model = Darknet(config_path, img_size=img_size)
-model.load_weights(weights_path)
-model.cuda()
-model.eval()
+if os.path.exists(weights_path):
+    print('available!')
+    model = Darknet(config_path, img_size=img_size)
+    model.load_weights(weights_path)
+    model.cuda()
+    model.eval()
 
 classes = utils.load_classes(class_path)
 Tensor = torch.cuda.FloatTensor
@@ -56,7 +58,10 @@ def detect_image(img):
         detections = utils.non_max_suppression(detections, 1, conf_thres, nms_thres)
     return detections[0]
         
-def PoeNeuronAttackThread(data):
+def PoeNeuronObjectDetectionThread(data):
+    if not os.path.exists(weights_path):
+        return
+        
     while True:
         image = PoeNeuronScreenshotThread.get_next_screenshot()        
         

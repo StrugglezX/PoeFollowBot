@@ -6,7 +6,7 @@ import PoeNeuronData
 #import PoeNeuronTextThread
 #import PoeNeuronFollowPlayerThread
 import PoeNeuronMovementThread
-import PoeNeuronAttackThread
+import PoeNeuronObjectDetectionThread
 import PoeNeuronScreenshotThread
 import tkinter
 
@@ -33,9 +33,9 @@ if __name__ == "__main__":
     screenshot_thread.setDaemon(True)
     screenshot_thread.start()
     
-    attack_thread = threading.Thread(target=PoeNeuronAttackThread.PoeNeuronAttackThread, args=(data,))
-    attack_thread.setDaemon(True)
-    attack_thread.start()
+    detection_thread = threading.Thread(target=PoeNeuronObjectDetectionThread.PoeNeuronObjectDetectionThread, args=(data,))
+    detection_thread.setDaemon(True)
+    detection_thread.start()
     
     
     
