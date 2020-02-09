@@ -23,9 +23,9 @@ from PIL import Image
 # load weights and set defaults
 config_path='config/yolov3-tiny.cfg'
 #weights_path='config/yolov3.weights'
-weights_path='config/48.weights'
+weights_path='weights/best.pt'
 class_path='config/coco.names'
-img_size=416
+img_size=800
 conf_thres=0.8
 nms_thres=0.4
 
