@@ -8,6 +8,7 @@ import PoeNeuronData
 import PoeNeuronMovementThread
 import PoeNeuronObjectDetectionThread
 import PoeNeuronScreenshotThread
+import PoeNeuronFogThread
 import tkinter
 
 if __name__ == "__main__":
@@ -36,6 +37,10 @@ if __name__ == "__main__":
     detection_thread = threading.Thread(target=PoeNeuronObjectDetectionThread.PoeNeuronObjectDetectionThread, args=(data,))
     detection_thread.setDaemon(True)
     detection_thread.start()
+    
+    fog_thread = threading.Thread(target=PoeNeuronFogThread.PoeNeuronFogThread, args=(data,))
+    fog_thread.setDaemon(True)
+    fog_thread.start()
     
     
     

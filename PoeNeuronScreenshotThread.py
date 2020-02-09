@@ -20,7 +20,6 @@ def get_next_screenshot(data):
     threads_last_screenshot_count = thread_last_screenshot_dict[tid]
     
     while threads_last_screenshot_count > data._screenshot_number or data._screenshot == None:
-        print('threads_last_screenshot_count {} < data._screenshot_number {} or data._screenshot == None {}'.format(threads_last_screenshot_count, data._screenshot_number, data._screenshot == None))
         sleep(data._screenshot_sleep_interval)
         
     return data._screenshot

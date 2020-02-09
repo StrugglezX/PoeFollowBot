@@ -13,7 +13,9 @@ from torchvision import datasets, transforms
 from torch.autograd import Variable
 import scipy.misc
 import PoeNeuronScreenshotThread
+from PoeNeuronData import ObjectDetection
 from time import sleep
+import time
 
 from PIL import Image
 
@@ -39,6 +41,9 @@ Tensor = torch.cuda.FloatTensor
 
 mot_tracker = Sort() 
 
+def get_current_time_ms():
+    return int(round(time.time() * 1000))
+    
 def detect_image(img):
     # scale and pad image
     ratio = min(img_size/img.size[0], img_size/img.size[1])
@@ -67,9 +72,6 @@ def PoeNeuronObjectDetectionThread(data):
         sleep(0.3)
         
         image = PoeNeuronScreenshotThread.get_next_screenshot(data)
-        
-        print('clearing')
-        data._detected_objects = {}
         image = image.resize((800,800))
         img = np.array(image)
         detections = detect_image(image)
@@ -80,7 +82,6 @@ def PoeNeuronObjectDetectionThread(data):
         unpad_h = img_size - pad_y
         unpad_w = img_size - pad_x
         if detections is not None:
-            print('~~~~~~~~~~~detected things')
             tracked_objects = mot_tracker.update(detections.cpu())
             
             for x1, y1, x2, y2, obj_id, cls_pred in tracked_objects:
@@ -89,10 +90,8 @@ def PoeNeuronObjectDetectionThread(data):
                 y1 = int(((y1 - pad_y // 2) / unpad_h) * img.shape[0])
                 x1 = int(((x1 - pad_x // 2) / unpad_w) * img.shape[1])
                 cls = classes[int(cls_pred)]
-                print('{} at {}x{}'.format(cls, x1 + box_w_half, y1 + box_h_half))
                 
                 if cls not in data._detected_objects:
                     data._detected_objects[cls] = []
-                data._detected_objects[cls].append( (x1 + box_w_half, y1 + box_h_half) )
-        else:
-            print('no detections')
+                new_obj = ObjectDetection(x1 + box_w_half, y1 + box_h_half, get_current_time_ms())
+                data._detected_objects[cls].append( new_obj )

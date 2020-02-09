@@ -2,11 +2,12 @@
 import time
 import math
 from pynput.mouse import Button, Controller as MouseController
-from pynput import keyboard
+import keyboard
 import pynput
 import time
 import random
 from time import sleep
+from PoeNeuronData import ObjectDetection
 import copy
 
 mouse = MouseController()
@@ -47,17 +48,20 @@ def get_closest_monster(data):
     coodinate = None
     detected_objects = copy.deepcopy(data._detected_objects)
     
-    print('keys {}'.format(detected_objects.keys()))
     for key in detected_objects.keys():
         if key not in get_monster_list():
-            print('{} not monster'.format(key))
             continue
-        print('detected_objects[key] {}'.format(detected_objects[key]))
         
         object_coordinates = detected_objects[key]
-        for object_coordinate in object_coordinates:
+        for object_coordinate in list(object_coordinates):
             #deadzone check
-            return object_coordinate
+            staleness = get_current_time_ms() - object_coordinate._time
+            if staleness < 3000:                
+                print( 'Attacking {} at {}x{}'.format(key, object_coordinate._x, object_coordinate._y ) )
+                return (object_coordinate._x, object_coordinate._y)
+            else:
+                print('removing stale {} at {}x{}'.format(key, object_coordinate._x, object_coordinate._y ) )
+                object_coordinates.remove(object_coordinate)
     
     return coodinate
     
@@ -70,21 +74,26 @@ def get_current_time_ms():
 def is_cooldown_over(last_time, total_cooldown_time):
     current_time = get_current_time_ms()
     time_elapsed = current_time - last_time
-    print( 'time_elapsed {} total_cooldown_time {} '.format(time_elapsed, total_cooldown_time) )
     return time_elapsed > total_cooldown_time
     
 def PoeNeuronMovementThread(data):
 
     last_attack_time = 0
-    total_attack_cooldown = 3000 #ms
+    total_attack_cooldown = 0 #ms
     
     while True:
-        sleep( random.uniform(0.2, 0.5) )
+        sleep_time = random.random() * 0.5
+        sleep( sleep_time )
+        
+        """
+        if keyboard.is_pressed('a'):
+            print('sleeping for 10s')
+            sleep(10)
+        """
         
         
         ## ATTACK
         coordinate = get_closest_monster( data )
-        print('is_cooldown_over(last_attack_time, total_attack_cooldown) {} and coordinate != None {}'.format(is_cooldown_over(last_attack_time, total_attack_cooldown), coordinate != None))
         if is_cooldown_over(last_attack_time, total_attack_cooldown) and coordinate != None:
             move_mouse( coordinate[0], coordinate[1] );
             right_mouse_click()
@@ -95,5 +104,10 @@ def PoeNeuronMovementThread(data):
         
         
         ## MOVE
+        if data._fog_coordinate != None:  
+            print('clicking fog at {}x{}'.format(data._fog_coordinate[0], data._fog_coordinate[1]))
+            move_mouse( data._fog_coordinate[0], data._fog_coordinate[1] );
+            left_mouse_click()
+            continue
         
         
