@@ -21,11 +21,11 @@ import time
 from PIL import Image
 
 # load weights and set defaults
-config_path='config/yolov3.cfg'
+config_path='config/yolov3-tiny.cfg'
 #weights_path='config/yolov3.weights'
-weights_path='config/49.weights'
+weights_path='config/48.weights'
 class_path='config/coco.names'
-img_size=800
+img_size=416
 conf_thres=0.8
 nms_thres=0.4
 
@@ -71,14 +71,14 @@ def PoeNeuronObjectDetectionThread(data):
         
     while True:
         
-        print('checking')
         image = PoeNeuronScreenshotThread.get_next_screenshot(data)
-        print('scanning')
-        image = image.resize((800,800))
+        image = image.resize((img_size,img_size))
         img = np.array(image)
-        print('1: {}'.format(get_current_time_ms()))
+        t1 = get_current_time_ms()
         detections = detect_image(image)
-        print('2: {}'.format(get_current_time_ms()))
+        t2 = get_current_time_ms()
+        time_taken = t2 - t1
+        print('fps: {}'.format(1000.0 / time_taken))
         
         
         pad_x = max(img.shape[0] - img.shape[1], 0) * (img_size / max(img.shape))
