@@ -10,7 +10,28 @@ import PoeNeuronObjectDetectionThread
 import PoeNeuronScreenshotThread
 import PoeNeuronFogThread
 import tkinter
+import pynput
 
+
+def hook_keyboard(data):
+    from pynput.keyboard import Key
+    from pynput.keyboard import Listener
+
+
+    def on_press(key):
+        print('{0} pressed'.format(key))
+
+    def on_release(key):
+        print('{0} release'.format(key))
+        if key.char == 'a' or key == Key.esc:
+            data._escape = True
+
+    # Collect events until released
+    with Listener(
+            on_press=on_press,
+            on_release=on_release) as listener:
+        listener.join()
+        
 if __name__ == "__main__":
     data = PoeNeuronData.PoeNeuronData()
     """
@@ -42,6 +63,9 @@ if __name__ == "__main__":
     fog_thread.setDaemon(True)
     fog_thread.start()
     
+    keyboard_thread = threading.Thread(target=hook_keyboard, args=(data,))
+    keyboard_thread.setDaemon(True)
+    keyboard_thread.start()
     
     
        

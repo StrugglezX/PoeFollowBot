@@ -85,11 +85,13 @@ def PoeNeuronMovementThread(data):
         sleep_time = random.random() * 0.5
         sleep( sleep_time )
         
-        """
-        if keyboard.is_pressed('a'):
+        print('checksleep {}'.format( data._escape ) )
+        if data._escape:
             print('sleeping for 10s')
-            sleep(10)
-        """
+            sleep(10000)
+            data._escape = False
+            print('done sleeping for 10s')
+        
         
         
         ## ATTACK
