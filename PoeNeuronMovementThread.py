@@ -47,19 +47,18 @@ def get_monster_list():
         
 def get_closest_monster(data):
     coodinate = None
-    detected_objects = copy.deepcopy(data._detected_objects)
+    detected_objects = data._detected_objects
     
-    for key in detected_objects.keys():
+    for key in list(detected_objects.keys()):
         if key not in get_monster_list():
             continue
         
-        object_coordinates = copy.deepcopy(detected_objects[key])
-        for obj_id in object_coordinates.keys():
-            object_coordinate = object_coordinates[obj_id]
+        object_coordinates = list(detected_objects[key])
+        for object_coordinate in object_coordinates:
             if object_coordinate == None:
                 continue
             staleness = get_current_time_ms() - object_coordinate._time
-            if staleness < 2000:                
+            if staleness < 1000:                
                 print( 'Attacking {} at {}x{}'.format(key, object_coordinate._x, object_coordinate._y ) )
                 return (object_coordinate._x, object_coordinate._y)
     

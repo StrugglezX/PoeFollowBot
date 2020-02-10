@@ -1,6 +1,6 @@
 
-import PoeNeuronScreenshotThread
 from PIL import ImageGrab
+from time import sleep
 
 def PoeNeuronFogThread(data):
     while True:
@@ -22,7 +22,6 @@ def PoeNeuronFogThread(data):
         
         expected_pixel = (38, 133, 180)
         found_coordinate = None
-        print('going!')
         
         while current_width < end_x and not found_coordinate:
         

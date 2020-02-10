@@ -14,7 +14,6 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 import scipy.misc
-import PoeNeuronScreenshotThread
 from PoeNeuronData import ObjectDetection
 from time import sleep
 import time
@@ -51,8 +50,8 @@ def prepare_image(img0):
     img /= 255.0  # 0 - 255 to 0.0 - 1.0
     return img
     
-def detect_image(im0s, device, model):
-
+def detect_image(data, im0s, device, model):
+    detections = []
     names = load_classes(names_path)
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(names))]
     
@@ -85,6 +84,7 @@ def detect_image(im0s, device, model):
     for i, det in enumerate(pred):  # detections per image
         t1f = get_current_time_ms()
         p, s, im0 = path, '', im0s
+        im0 = numpy.array(im0s) 
 
         save_path = str(Path(out) / Path(p).name)
         s += '%gx%g ' % img.shape[2:]  # print string
@@ -97,27 +97,30 @@ def detect_image(im0s, device, model):
             for c in det[:, -1].unique():
                 n = (det[:, -1] == c).sum()  # detections per class
                 s += '%g %ss, ' % (n, names[int(c)])  # add to string
-
-            # Write results
+                
             for *xyxy, conf, cls in det:
-                if save_txt:  # Write to file
-                    with open(save_path + '.txt', 'a') as file:
-                        file.write(('%g ' * 6 + '\n') % (*xyxy, cls, conf))
-
-                if save_img or view_img:  # Add bbox to image
-                    label = '%s %.2f' % (names[int(cls)], conf)
-                    plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
-
-        # Print time (inference + NMS)
-        print('%sDone. (%.3fs)' % (s, time.time() - t))
+                x1 = int(xyxy[0])
+                x2 = int(xyxy[2])
+                
+                y1 = int(xyxy[1])
+                y2 = int(xyxy[3])
+                
+                av_x = (x1 + x2) / 2.0
+                av_y = (y1 + y2) / 2.0
+                det_name = names[int(c)]
+                
+                dist_center_x = abs(av_x - (img_size / 2))
+                y_character_offset_from_center = -50
+                dist_center_y = abs(av_y - ((img_size / 2) + y_character_offset_from_center))
+                print('conf {} dist_center_x {} dist_center_y {}'.format(conf, dist_center_x, dist_center_y))
+                if dist_center_x < 50 and dist_center_y < 50:
+                    #deadzone
+                    pass
+                elif conf > 0.60:
+                    detections.append( (av_x, av_y, det_name) )
+                
+    return detections
         
-        """
-        cv2.imshow('detection (q exit):', im0)
-        if cv2.waitKey(1) == ord('q'):  # q to quit
-            raise StopIteration
-        """
-    print('a-b{}  b-c{} c-cd{} cd-d{} d-e{} e-f{} f-g{}'.format(t1b - t1a, t1c - t1b, t1cd - t1c, t1d - t1cd, t1e - t1d, t1f - t1e, t1g - t1f))
-    return None
         
 def PoeNeuronObjectDetectionThread(data):
     if not os.path.exists(weights_path):
@@ -147,46 +150,28 @@ def PoeNeuronObjectDetectionThread(data):
         
     while True:
         
-        image = ImageGrab.grab()
-        image = image.resize((img_size,img_size))
-        img = np.array(image)
+        image0 = ImageGrab.grab()
+        image1 = image0.resize((img_size,img_size))
+        img = np.array(image1)
         t1 = get_current_time_ms()
-        detections = detect_image(image, device, model)
+        detections = detect_image(data, image1, device, model)
         t2 = get_current_time_ms()
-        time_taken = t2 - t1
-        print('fps: {}'.format(1000.0 / time_taken))
+        time_taken = t2 - t1        
         
+        for det in detections:
+            converted_x = (det[0] / img_size) * image0.width
+            converted_y = (det[1] / img_size) * image0.height
+            det_name = det[2]
+            print('detected {} at {}x{}'.format(det_name, converted_x, converted_y))
+            if det_name not in data._detected_objects:
+                data._detected_objects[det_name] = []
+            data._detected_objects[det_name].append(ObjectDetection(converted_x, converted_y, get_current_time_ms()))
         
-        pad_x = max(img.shape[0] - img.shape[1], 0) * (img_size / max(img.shape))
-        pad_y = max(img.shape[1] - img.shape[0], 0) * (img_size / max(img.shape))
-        unpad_h = img_size - pad_y
-        unpad_w = img_size - pad_x
-        if detections is not None:
-            tracked_objects = mot_tracker.update(detections.cpu())
-            
-            for x1, y1, x2, y2, obj_id, cls_pred in tracked_objects:
-                box_h_half = int(((y2 - y1) / unpad_h) * img.shape[0]) / 2
-                box_w_half = int(((x2 - x1) / unpad_w) * img.shape[1]) / 2
-                y1 = int(((y1 - pad_y // 2) / unpad_h) * img.shape[0])
-                x1 = int(((x1 - pad_x // 2) / unpad_w) * img.shape[1])
-                cls = classes[int(cls_pred)]
-                print('detected {} at {}x{}'.format(cls, x1, y1))
-                if cls not in data._detected_objects:
-                    data._detected_objects[cls] = {}
-                new_obj = ObjectDetection(x1 + box_w_half, y1 + box_h_half, get_current_time_ms())
-                data._detected_objects[cls][obj_id] = new_obj 
-                
-        """
-        copy_dets = copy.deepcopy(data._detected_objects)
-        for cls in copy_dets:
-            for obj_id in copy_dets[cls]:
-                object_coordinate = copy_dets[cls][obj_id]
-                if object_coordinate == None:
-                    continue
-                detected_time = object_coordinate._time
-                if get_current_time_ms() - detected_time > 3000:
-                    data._detected_objects[cls][obj_id] = None
-        """
+        for cls in list(data._detected_objects.keys()):
+            for object_coordinate in list(data._detected_objects[cls]):
+                if get_current_time_ms() - object_coordinate._time > 1000:
+                    data._detected_objects[cls].remove(object_coordinate)
+        
                     
                     
                     

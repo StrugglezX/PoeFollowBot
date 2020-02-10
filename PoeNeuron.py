@@ -7,7 +7,6 @@ import PoeNeuronData
 #import PoeNeuronFollowPlayerThread
 import PoeNeuronMovementThread
 import PoeNeuronObjectDetectionThread
-import PoeNeuronScreenshotThread
 import PoeNeuronFogThread
 import tkinter
 import pynput
@@ -49,11 +48,9 @@ if __name__ == "__main__":
     follow_player_thread.start()
     """
     
-    """
     movement_thread = threading.Thread(target=PoeNeuronMovementThread.PoeNeuronMovementThread, args=(data,))
     movement_thread.setDaemon(True)
     movement_thread.start()
-    """
     
     detection_thread = threading.Thread(target=PoeNeuronObjectDetectionThread.PoeNeuronObjectDetectionThread, args=(data,))
     detection_thread.setDaemon(True)
