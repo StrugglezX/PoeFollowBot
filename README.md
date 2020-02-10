@@ -40,3 +40,5 @@ python train.py
 python train.py --data data\coco.data
 doskey /history
 ```
+
+`python PoeNeuron.py` - able to do twilight strand now. Lots of config tweaking when i add more than zombies. and many more screenshots. too lazy for this.
