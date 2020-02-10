@@ -3,6 +3,7 @@
 from PIL import Image, ImageGrab
 from models import *
 from utils import *
+from utils.datasets import *
 import cv2
 from sort import *
 import copy
@@ -17,65 +18,140 @@ import PoeNeuronScreenshotThread
 from PoeNeuronData import ObjectDetection
 from time import sleep
 import time
+import numpy
 
 from PIL import Image
 
-# load weights and set defaults
-config_path='config/yolov3-tiny.cfg'
-#weights_path='config/yolov3.weights'
-weights_path='weights/best.pt'
-class_path='config/coco.names'
 img_size=800
-conf_thres=0.8
-nms_thres=0.4
-
-# load model and put into eval mode
-if os.path.exists(weights_path):
-    print('available!')
-    model = Darknet(config_path, img_size=img_size)
-    model.load_weights(weights_path)
-    model.cuda()
-    model.eval()
-
-classes = utils.load_classes(class_path)
-Tensor = torch.cuda.FloatTensor
-
-mot_tracker = Sort() 
+conf_thres=0.3
+iou_thres=0.5
+weights_path='weights/best.pt'
+names_path='config/coco.names'
+config_path='config/yolov3.cfg'
+classify = False
 
 def get_current_time_ms():
     return int(round(time.time() * 1000))
     
-def detect_image(img):
-    # scale and pad image
-    ratio = min(img_size/img.size[0], img_size/img.size[1])
-    imw = round(img.size[0] * ratio)
-    imh = round(img.size[1] * ratio)
-    img_transforms = transforms.Compose([ transforms.Resize((imh, imw)),
-         transforms.Pad((max(int((imh-imw)/2),0), max(int((imw-imh)/2),0), max(int((imh-imw)/2),0), max(int((imw-imh)/2),0)),
-                        (128,128,128)),
-         transforms.ToTensor(),
-         ])
-    # convert image to Tensor
-    image_tensor = img_transforms(img).float()
-    image_tensor = image_tensor.unsqueeze_(0)
-    input_img = Variable(image_tensor.type(Tensor))
-    # run inference on the model and get detections
-    with torch.no_grad():
-        detections = model(input_img)
-        detections = utils.non_max_suppression(detections, 1, conf_thres, nms_thres)
-    return detections[0]
+screenshot_count = 0
+
+def prepare_image(img0):
+    # Padded resize
+#    img = img0 #cv2.cvtColor(numpy.array(img0), cv2.COLOR_RGB2BGR)
+    img = numpy.array(img0) 
+    # Convert RGB to BGR 
+    #img = img[:, :, ::-1].copy() 
+    
+    img = letterbox(img, new_shape=img_size)[0]
+
+    # Convert
+    img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+    half = False
+    img = np.ascontiguousarray(img, dtype=np.float16 if half else np.float32)  # uint8 to fp16/fp32
+    img /= 255.0  # 0 - 255 to 0.0 - 1.0
+    return img
+    
+def detect_image(im0s, device, model):
+
+    names = load_classes(names_path)
+    colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(names))]
+    
+    t1a = get_current_time_ms()
+    img = prepare_image(im0s)
+    t = time.time()
+    t1b = get_current_time_ms()
+
+    # Get detections
+    img = torch.from_numpy(img).to(device)
+    t1c = get_current_time_ms()
+    if img.ndimension() == 3:
+        img = img.unsqueeze(0)
+        t1cd = get_current_time_ms()
+        
+    pred = model(img)[0]
+    t1d = get_current_time_ms()
+
+    # Apply NMS
+    pred = non_max_suppression(pred, conf_thres, iou_thres, classes=None, agnostic=False)
+    t1e = get_current_time_ms()
+    
+    # Apply Classifier
+    if classify:
+        pred = apply_classifier(pred, modelc, img, im0s)
+
+    # Process detections
+    path = 'G:/PoeFollowBot/data/PathOfExileMonsters/images/0/zombie0.jpg'
+    out = 'G:/PoeFollowBot/output'
+    for i, det in enumerate(pred):  # detections per image
+        t1f = get_current_time_ms()
+        p, s, im0 = path, '', im0s
+
+        save_path = str(Path(out) / Path(p).name)
+        s += '%gx%g ' % img.shape[2:]  # print string
+        t1g = get_current_time_ms()
+        if det is not None and len(det):
+            # Rescale boxes from img_size to im0 size
+            det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
+
+            # Print results
+            for c in det[:, -1].unique():
+                n = (det[:, -1] == c).sum()  # detections per class
+                s += '%g %ss, ' % (n, names[int(c)])  # add to string
+
+            # Write results
+            for *xyxy, conf, cls in det:
+                if save_txt:  # Write to file
+                    with open(save_path + '.txt', 'a') as file:
+                        file.write(('%g ' * 6 + '\n') % (*xyxy, cls, conf))
+
+                if save_img or view_img:  # Add bbox to image
+                    label = '%s %.2f' % (names[int(cls)], conf)
+                    plot_one_box(xyxy, im0, label=label, color=colors[int(cls)])
+
+        # Print time (inference + NMS)
+        print('%sDone. (%.3fs)' % (s, time.time() - t))
+        
+        """
+        cv2.imshow('detection (q exit):', im0)
+        if cv2.waitKey(1) == ord('q'):  # q to quit
+            raise StopIteration
+        """
+    print('a-b{}  b-c{} c-cd{} cd-d{} d-e{} e-f{} f-g{}'.format(t1b - t1a, t1c - t1b, t1cd - t1c, t1d - t1cd, t1e - t1d, t1f - t1e, t1g - t1f))
+    return None
         
 def PoeNeuronObjectDetectionThread(data):
     if not os.path.exists(weights_path):
         return
         
+    torch.no_grad()
+    model = Darknet(config_path, img_size)
+    attempt_download(weights_path)
+    device = torch_utils.select_device('')
+    if weights_path.endswith('.pt'):  # pytorch format
+        model.load_state_dict(torch.load(weights_path, map_location=device)['model'])
+    else:  # darknet format
+        load_darknet_weights(model, weights_path)
+        
+    # Second-stage classifier
+    if classify:
+        modelc = torch_utils.load_classifier(name='resnet101', n=2)  # initialize
+        modelc.load_state_dict(torch.load('weights/resnet101.pt', map_location=device)['model'])  # load weights
+        modelc.to(device).eval()
+    model.to(device).eval()
+            
+    # Half precision
+    half = False
+    half = half and device.type != 'cpu'  # half precision only supported on CUDA
+    if half:
+        model.half()
+        
     while True:
         
-        image = PoeNeuronScreenshotThread.get_next_screenshot(data)
+        image = ImageGrab.grab()
         image = image.resize((img_size,img_size))
         img = np.array(image)
         t1 = get_current_time_ms()
-        detections = detect_image(image)
+        detections = detect_image(image, device, model)
         t2 = get_current_time_ms()
         time_taken = t2 - t1
         print('fps: {}'.format(1000.0 / time_taken))

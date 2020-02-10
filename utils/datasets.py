@@ -100,6 +100,7 @@ class LoadImages:  # for inference
             print('image %g/%g %s: ' % (self.count, self.nF, path), end='')
 
         # Padded resize
+        print('\nsize: {}'.format(self.img_size))
         img = letterbox(img0, new_shape=self.img_size)[0]
 
         # Convert

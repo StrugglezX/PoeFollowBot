@@ -49,13 +49,11 @@ if __name__ == "__main__":
     follow_player_thread.start()
     """
     
+    """
     movement_thread = threading.Thread(target=PoeNeuronMovementThread.PoeNeuronMovementThread, args=(data,))
     movement_thread.setDaemon(True)
     movement_thread.start()
-    
-    screenshot_thread = threading.Thread(target=PoeNeuronScreenshotThread.PoeNeuronScreenshotThread, args=(data,))
-    screenshot_thread.setDaemon(True)
-    screenshot_thread.start()
+    """
     
     detection_thread = threading.Thread(target=PoeNeuronObjectDetectionThread.PoeNeuronObjectDetectionThread, args=(data,))
     detection_thread.setDaemon(True)

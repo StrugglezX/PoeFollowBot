@@ -18,6 +18,7 @@ def detect(save_img=False):
     os.makedirs(out)  # make new output folder
 
     # Initialize model
+    print('model size {}'.format(img_size))
     model = Darknet(opt.cfg, img_size)
 
     # Load weights
@@ -43,6 +44,7 @@ def detect(save_img=False):
 
     # Export mode
     if ONNX_EXPORT:
+        print('onnx export!!~~')
         model.fuse()
         img = torch.zeros((1, 3) + img_size)  # (1, 3, 320, 192)
         torch.onnx.export(model, img, 'weights/export.onnx', verbose=False, opset_version=10)
@@ -57,6 +59,7 @@ def detect(save_img=False):
     # Half precision
     half = half and device.type != 'cpu'  # half precision only supported on CUDA
     if half:
+        print('half')
         model.half()
 
     # Set Dataloader

@@ -1,9 +1,11 @@
 
 import PoeNeuronScreenshotThread
+from PIL import ImageGrab
 
 def PoeNeuronFogThread(data):
     while True:
-        image = PoeNeuronScreenshotThread.get_next_screenshot(data)
+        sleep(0.5)
+        image = ImageGrab.grab()
         total_width, total_height = image.size
         start_x = int(total_width * 0.2)
         end_x = int(total_width * 0.8)
@@ -20,6 +22,7 @@ def PoeNeuronFogThread(data):
         
         expected_pixel = (38, 133, 180)
         found_coordinate = None
+        print('going!')
         
         while current_width < end_x and not found_coordinate:
         
