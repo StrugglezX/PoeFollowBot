@@ -10,7 +10,35 @@ and pip install whatever breaks
 Run it on a VM for safety of banning your main account
 
 
+```
+Rarity: Rare
+Vengeance Ward
+Lion Pelt
+--------
+Quality: +7% (augmented)
+Evasion Rating: 707 (augmented)
+--------
+Requirements:
+Level: 70
+Dex: 150
+--------
+Sockets: G R 
+--------
+Item Level: 71
+--------
+Power Siphon fires an additional Projectile
+--------
++30 to Intelligence
+10% increased Global Accuracy Rating
+79% increased Evasion Rating
++14% to Fire Resistance
+11% increased Stun and Block Recovery
+Reflects 5 Physical Damage to Melee Attackers
+5% increased Light Radius
+--------
+Note: ~price 20 chaos
 
+```
 # Conda environment for pytorch
 
 ```
