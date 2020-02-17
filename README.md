@@ -66,6 +66,12 @@ python train.py
 conda install tqdm
 python train.py
 python train.py --data data\coco.data
+pip install colorama
+pip install timeago
+pip install screeninfo
+pip install win32gui
+pip install attr attrs
+pip install requests
 doskey /history
 ```
 
