@@ -40,3 +40,9 @@ python train.py
 python train.py --data data\coco.data
 doskey /history
 ```
+
+
+```
+git clone https://github.com/Ethck/Path-of-Accounting.git
+git checkout -t origin/dev
+```
