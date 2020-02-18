@@ -10,7 +10,35 @@ and pip install whatever breaks
 Run it on a VM for safety of banning your main account
 
 
+```
+Rarity: Rare
+Vengeance Ward
+Lion Pelt
+--------
+Quality: +7% (augmented)
+Evasion Rating: 707 (augmented)
+--------
+Requirements:
+Level: 70
+Dex: 150
+--------
+Sockets: G R 
+--------
+Item Level: 71
+--------
+Power Siphon fires an additional Projectile
+--------
++30 to Intelligence
+10% increased Global Accuracy Rating
+79% increased Evasion Rating
++14% to Fire Resistance
+11% increased Stun and Block Recovery
+Reflects 5 Physical Damage to Melee Attackers
+5% increased Light Radius
+--------
+Note: ~price 20 chaos
 
+```
 # Conda environment for pytorch
 
 ```
@@ -38,11 +66,17 @@ python train.py
 conda install tqdm
 python train.py
 python train.py --data data\coco.data
+pip install colorama
+pip install timeago
+pip install screeninfo
+pip install win32gui
+pip install attr attrs
+pip install requests
 doskey /history
 ```
-
-
 ```
 git clone https://github.com/Ethck/Path-of-Accounting.git
 git checkout -t origin/dev
 ```
+
+`python PoeNeuron.py` - able to do twilight strand now. Lots of config tweaking when i add more than zombies. and many more screenshots. too lazy for this.
